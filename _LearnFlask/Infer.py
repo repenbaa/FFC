@@ -1,0 +1,54 @@
+import sys
+import librosa
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.models import Model
+
+
+layer_name = 'global_max_pooling2d'
+model = tf.keras.models.load_model(
+    'E:/AL_ML_DL/ResNet50/models/Types_resnet.h5')
+intermediate_layer_model = Model(
+    inputs=model.input, outputs=model.get_layer(layer_name).output)
+
+
+# 读取音频数据
+def load_data(data_path):
+    wav, sr = librosa.load(data_path, sr=16000)
+    intervals = librosa.effects.split(wav, top_db=20)
+    wav_output = []
+    for sliced in intervals:
+        wav_output.extend(wav[sliced[0]:sliced[1]])
+    assert len(wav_output) >= 8000, "有效音频小于0.5s"
+    wav_output = np.array(wav_output)
+    ps = librosa.feature.melspectrogram(
+        y=wav_output, sr=sr, hop_length=256).astype(np.float32)
+    ps = ps[np.newaxis, ..., np.newaxis]
+    return ps
+
+
+def infer(audio_path):
+    data = load_data(audio_path)
+    feature = intermediate_layer_model.predict(data)
+    return feature
+
+
+if __name__ == '__main__':
+    if (len(sys.argv) > 1):
+        # 要预测的两个人的音频文件
+        #person1 = r'C:\Users\user\Desktop\VoiceprintRecognition-Tensorflow-master\VoiceprintRecognition-Tensorflow-master\audio_sets\__WAVE\_sum\0-0.wav'
+        #person2 = r'C:\Users\user\Desktop\VoiceprintRecognition-Tensorflow-master\VoiceprintRecognition-Tensorflow-master\audio_sets\__WAVE\_sum\20-0.wav'
+        #person1 = 'E:/AL_ML_DL/DataSets/LiveSets/dataset/fold1/7061-6-0-0.wav'
+        person1 = sys.argv[1]
+        person2 = sys.argv[2]
+        feature1 = infer(person1)[0]
+        feature2 = infer(person2)[0]
+        # 对角余弦值
+        dist = np.dot(feature1, feature2) / \
+            (np.linalg.norm(feature1) * np.linalg.norm(feature2))
+        if dist > 0.7:
+            print("%s 和 %s 为同一个人，相似度为：%f" % (person1, person2, dist))
+        else:
+            print("%s 和 %s 不是同一个人，相似度为：%f" % (person1, person2, dist))
+    else:
+        print("沒參數不執行任何事情")

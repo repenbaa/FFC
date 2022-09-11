@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WELCOME</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.js"
+        integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous">
+        </script>
+    <script type="text/javascript" src="{{url_for('static', filename='./js/script.js')}}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/reName.css') }}">
+</head>
+
+<body>
+    <form action="" method=post enctype=multipart/form-data>
+        <p>用戶認證
+            <input type=file name=file>
+            <input type=submit value=Upload>
+        </p>
+    </form>
+    {% if data != undefined%}
+    <h2>upload: {{data.upload}}</h2>
+    <h2>file: {{data.file}}</h2>
+    <hr>
+    {% endif %}
+
+    {% if text != undefined%}
+    <p>搜尋結果</p>
+    <h2>text: {{text}}</h2>
+    {% endif %}
+</body>
+
+</html>
